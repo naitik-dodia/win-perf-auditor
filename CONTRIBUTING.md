@@ -6,6 +6,21 @@ Both the Python audit engine (`audit.py`) and the PowerShell remediation script 
 
 ---
 
+## Fast-Track Discovery with AI Tools (`CLAUDE.md`, `GEMINI.md`, `SKILL.md`)
+
+To rapidly discover and research services on your Windows PC that are not yet in [`data/`](./data):
+
+1. Run the read-only forensic discovery script:
+   ```powershell
+   python scripts/find_uncataloged_services.py
+   # Or include stopped Manual services:
+   python scripts/find_uncataloged_services.py --include-stopped
+   ```
+   This extracts `ServiceDll` / binary paths, Authenticode X.509 digital signatures, PE `VersionInfo`, dependency graphs, and CPU/RAM/Disk I/O footprints.
+2. Open the repository in **Claude Code** ([`CLAUDE.md`](./CLAUDE.md)), **Gemini CLI**, or **Google Antigravity** ([`GEMINI.md`](./GEMINI.md) + [`.agents/skills/identify-windows-services/SKILL.md`](./.agents/skills/identify-windows-services/SKILL.md) / [`SKILL.md`](./SKILL.md)) and ask your AI assistant to evaluate the uncataloged services using the 6-signal forensic rubric and append validated rows to `data/*.csv`.
+
+---
+
 ## 1. Choosing the Right CSV Repository
 
 | CSV File | When to Add a Service Here | Applied by Default? |

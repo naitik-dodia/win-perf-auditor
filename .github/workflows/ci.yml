@@ -26,6 +26,10 @@ jobs:
       - name: Run Python Unit Tests
         run: python -m unittest discover -s tests -v
 
+      - name: Smoke-Test AI Forensic Service Discovery Helper
+        shell: powershell
+        run: python scripts/find_uncataloged_services.py --top-processes 3 --format json | Out-Null
+
       - name: Validate PowerShell Script Syntax & DryRun
         shell: powershell
         run: |

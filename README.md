@@ -17,7 +17,9 @@ An open-source, CSV-repository-driven diagnostic and service optimization toolki
    - Maps all installed `Win32_Service` entries (including split/shared `svchost.exe` hosts and per-user `_<LUID>` services) to live CPU, RAM, Disk I/O, binary publisher metadata, and dependency graphs.
 3. **Open-Source CSV Rule Repositories ([`data/`](./data))**:
    - Community-extensible CSV files power **both** the Python audit reports and the PowerShell optimizer—no code changes required to add new services.
-4. **Human-in-the-Loop Safety & One-Command Rollback**:
+4. **AI-Ready Forensic Discovery (`CLAUDE.md`, `GEMINI.md`, `SKILL.md`)**:
+   - Pre-configured workspace rules and an agent skill let **Claude Code**, **Gemini CLI**, **Google Antigravity**, and Agent Skills-compatible tools automatically extract Authenticode signatures, `ServiceDll` metadata, dependency graphs, and resource footprints via `scripts/find_uncataloged_services.py` to explain unfamiliar processes and classify new services rapidly.
+5. **Human-in-the-Loop Safety & One-Command Rollback**:
    - Enforces a hardcoded Core OS Protected Blocklist (`data/core_protected_services.csv`) and active reverse-dependency checks.
    - Keeps feature-dependent **Tier 2** services safely gated behind `-IncludeConditional` (plus `-ExcludeServices` / `-OnlyFeatureGroups`) for human intervention.
    - Automatically saves pre-change JSON snapshots to `backups/` and supports full multi-snapshot rollback via `scripts\restore-services.ps1`.
@@ -29,6 +31,12 @@ An open-source, CSV-repository-driven diagnostic and service optimization toolki
 ```text
 win-perf-auditor/
 ├── audit.py                           # Main CLI entry point & CSV repository validator
+├── CLAUDE.md                          # Workspace guide & invariants for Claude Code
+├── GEMINI.md                          # Workspace rules for Gemini CLI & Google Antigravity
+├── SKILL.md                           # Reusable AI skill runbook for service/process identification
+├── .agents/skills/
+│   └── identify-windows-services/
+│       └── SKILL.md                   # Auto-discovered workspace skill for AI agents
 ├── requirements.txt                   # Python dependencies (psutil, colorama)
 ├── CONTRIBUTING.md                    # Guide for adding services to the CSV repositories
 ├── data/                              # Open-source CSV service rule repositories
@@ -46,6 +54,7 @@ win-perf-auditor/
 │   ├── root_cause_analyzer.py         # Generic Windows slowdown root-cause analyzer
 │   └── report_generator.py            # Markdown, CSV, and JSON report generators
 ├── scripts/
+│   ├── find_uncataloged_services.py   # Forensic Authenticode & footprint discovery helper for AI tools
 │   ├── collect_windows_telemetry.ps1  # Read-only WMI/CIM, PerfCounter, PowerCfg & EventLog helper
 │   ├── disable-services.ps1           # CSV-driven Administrator service optimizer
 │   └── restore-services.ps1           # Chronological multi-snapshot rollback script
@@ -115,6 +124,29 @@ powershell -ExecutionPolicy Bypass -File .\scripts\restore-services.ps1 -DryRun
 # Restore original service startup modes and running states:
 powershell -ExecutionPolicy Bypass -File .\scripts\restore-services.ps1
 ```
+
+---
+
+## AI-Assisted Service & Process Discovery (`CLAUDE.md`, `GEMINI.md`, `SKILL.md`)
+
+Every PC has unique OEM drivers, peripheral daemons, and third-party background utilities. This repository ships built-in AI context and skill files so tools like **Claude Code**, **Gemini CLI**, and **Google Antigravity** can immediately investigate unknown services and processes on your machine:
+
+- [`CLAUDE.md`](./CLAUDE.md) — Project architecture, safety invariants, and discovery instructions for Claude Code.
+- [`GEMINI.md`](./GEMINI.md) — Always-on workspace rules for Gemini CLI and Google Antigravity.
+- [`SKILL.md`](./SKILL.md) & [`.agents/skills/identify-windows-services/SKILL.md`](./.agents/skills/identify-windows-services/SKILL.md) — Step-by-step 6-signal forensic evaluation protocol and 5-tier CSV classification rubric.
+
+You (or your AI assistant) can run the forensic discovery helper directly:
+
+```powershell
+# Inspect active/automatic uncataloged services + top non-service background processes:
+python scripts/find_uncataloged_services.py
+
+# Sweep ALL uncataloged services (including stopped Manual services) in JSON format:
+python scripts/find_uncataloged_services.py --include-stopped --format json
+```
+
+Example prompt to give Claude, Gemini, or Antigravity inside this repo:
+> *"Find any uncataloged Windows services and heavy background processes on my PC, verify their Authenticode signatures, explain what each one does, and add safe classification entries to `data/*.csv`."*
 
 ---
 
