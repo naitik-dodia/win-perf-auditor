@@ -1,0 +1,42 @@
+name: Validate CSV Repositories & Unit Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Validate CSV Service Repositories
+        run: python audit.py --validate-repo
+
+      - name: Run Python Unit Tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate PowerShell Script Syntax & DryRun
+        shell: powershell
+        run: |
+          $e1 = $null; $e2 = $null; $e3 = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\scripts\collect_windows_telemetry.ps1", [ref]$null, [ref]$e1) | Out-Null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\scripts\disable-services.ps1", [ref]$null, [ref]$e2) | Out-Null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\scripts\restore-services.ps1", [ref]$null, [ref]$e3) | Out-Null
+          if ($e1.Count -gt 0 -or $e2.Count -gt 0 -or $e3.Count -gt 0) {
+              Write-Error "PowerShell syntax parse errors detected!"
+              exit 1
+          }
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\disable-services.ps1 -DryRun
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\disable-services.ps1 -DryRun -IncludeConditional
+

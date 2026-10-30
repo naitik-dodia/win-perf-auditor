@@ -1,0 +1,25 @@
+# Local machine-specific audit reports & raw WMI snapshots (do not commit personal telemetry)
+reports/*
+!reports/.gitkeep
+
+# Local service state rollback snapshots
+backups/*
+!backups/.gitkeep
+
+# Python bytecode & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor / OS metadata
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+
